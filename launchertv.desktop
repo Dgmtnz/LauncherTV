@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=LauncherTV
+Comment=Android TV-style launcher for Linux
+Exec=/home/dgmtnz/Documents/LauncherTV/main.py
+Icon=preferences-desktop
+Terminal=false
+Categories=System;
+StartupWMClass=LauncherTV
