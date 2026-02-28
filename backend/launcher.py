@@ -12,11 +12,17 @@ class AppLauncher(QObject):
     launched = Signal(str)
     settingsRequested = Signal()
 
-    @Slot(str, str)
-    def launch(self, exec_cmd: str, desktop_id: str = ""):
+    @Slot(str, str, str)
+    def launch(self, exec_cmd: str, desktop_id: str = "", wm_class: str = ""):
         if exec_cmd == "__settings__":
             self.settingsRequested.emit()
             return
+
+        if wm_class:
+            existing = x11.find_window_by_class(wm_class)
+            if existing:
+                x11.activate_window(existing)
+                return
 
         try:
             parts = shlex.split(exec_cmd)

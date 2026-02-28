@@ -31,7 +31,8 @@ Item {
         if (rowAppsModel === null || currentCardIndex < 0) return;
         let cmd = rowAppsModel.execCmdAt(currentCardIndex);
         let did = rowAppsModel.desktopIdAt(currentCardIndex);
-        if (cmd) appLauncher.launch(cmd, did);
+        let wmc = rowAppsModel.wmClassAt(currentCardIndex);
+        if (cmd) appLauncher.launch(cmd, did, wmc);
     }
 
     Text {

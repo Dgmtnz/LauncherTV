@@ -142,6 +142,19 @@ def window_name(wid):
     return m.group(1) if m else ""
 
 
+def find_window_by_class(wm_class):
+    """Find the first window whose WM_CLASS matches (case-insensitive)."""
+    if not wm_class:
+        return None
+    target = wm_class.lower()
+    for wid in get_all_window_ids():
+        out = _run(["xprop", "-id", wid, "WM_CLASS"])
+        classes = re.findall(r'"([^"]+)"', out)
+        if any(c.lower() == target for c in classes):
+            return wid
+    return None
+
+
 # ── Window manipulation ──────────────────────────────────────
 
 def remove_decorations(wid):

@@ -25,7 +25,8 @@ Item {
     function activate() {
         let cmd = mostUsedModel.execCmdAt(currentCardIndex);
         let did = mostUsedModel.desktopIdAt(currentCardIndex);
-        if (cmd) appLauncher.launch(cmd, did);
+        let wmc = mostUsedModel.wmClassAt(currentCardIndex);
+        if (cmd) appLauncher.launch(cmd, did, wmc);
     }
 
     Row {

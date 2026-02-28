@@ -60,6 +60,7 @@ SETTINGS_ENTRY = {
     "exec_cmd": "__settings__",
     "categories": ["System", "Settings"],
     "desktop_id": "__settings__",
+    "wm_class": "",
 }
 
 
@@ -109,12 +110,15 @@ def _parse_desktop_file(path: Path) -> dict | None:
     cats_raw = e.get("Categories", "")
     categories = [c.strip() for c in cats_raw.split(";") if c.strip()]
 
+    wm_class = e.get("StartupWMClass", "").strip()
+
     return {
         "name": name,
         "icon_source": _resolve_icon_source(icon),
         "exec_cmd": _strip_field_codes(exec_cmd),
         "categories": categories,
         "desktop_id": path.stem,
+        "wm_class": wm_class,
     }
 
 
@@ -155,12 +159,14 @@ class AppListModel(QAbstractListModel):
     IconSourceRole = Qt.UserRole + 2
     ExecCmdRole = Qt.UserRole + 3
     DesktopIdRole = Qt.UserRole + 4
+    WmClassRole = Qt.UserRole + 5
 
     _role_names = {
         NameRole: QByteArray(b"name"),
         IconSourceRole: QByteArray(b"iconSource"),
         ExecCmdRole: QByteArray(b"execCmd"),
         DesktopIdRole: QByteArray(b"desktopId"),
+        WmClassRole: QByteArray(b"wmClass"),
     }
 
     def __init__(self, apps: list[dict] | None = None, parent=None):
@@ -185,7 +191,15 @@ class AppListModel(QAbstractListModel):
             return app["exec_cmd"]
         if role == self.DesktopIdRole:
             return app["desktop_id"]
+        if role == self.WmClassRole:
+            return app.get("wm_class", "")
         return None
+
+    @Slot(int, result=str)
+    def wmClassAt(self, row: int) -> str:
+        if 0 <= row < len(self._apps):
+            return self._apps[row].get("wm_class", "")
+        return ""
 
     @Slot(int, result=str)
     def execCmdAt(self, row: int) -> str:
