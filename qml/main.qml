@@ -16,6 +16,22 @@ ApplicationWindow {
     property int currentRowIndex: 0
     readonly property int totalRows: 1 + rowRepeater.count
 
+    Timer {
+        id: loadingTimeout
+        interval: 8000
+        onTriggered: appLauncher.loadingId = ""
+    }
+
+    Connections {
+        target: appLauncher
+        function onLoadingChanged() {
+            if (appLauncher.loadingId !== "")
+                loadingTimeout.restart();
+            else
+                loadingTimeout.stop();
+        }
+    }
+
     // ── Background layers ───────────────────────────────────────
 
     property bool bgShowA: true
@@ -252,6 +268,9 @@ ApplicationWindow {
     }
 
     onActiveChanged: {
+        if (!active) {
+            appLauncher.loadingId = "";
+        }
         if (active) {
             if (settingsPage.visible) settingsPage.forceActiveFocus();
             else mainFocus.forceActiveFocus();

@@ -168,6 +168,7 @@ Item {
                         appName: model.name
                         appIconSource: model.iconSource
                         isFocused: hero.isActive && (index === hero.currentCardIndex)
+                        isLoading: model.desktopId === appLauncher.loadingId
                         onClicked: {
                             hero.currentCardIndex = index;
                             hero.activate();

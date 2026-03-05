@@ -6,6 +6,7 @@ Item {
     property string appName: ""
     property string appIconSource: ""
     property bool isFocused: false
+    property bool isLoading: false
 
     signal clicked()
 
@@ -14,14 +15,33 @@ Item {
 
     z: isFocused ? 10 : 1
 
+    property real _focusScale: isFocused ? 1.08 : 1.0
+    property real _pulseScale: 1.0
+
+    Behavior on _focusScale { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+
     transform: Scale {
         origin.x: card.width / 2
         origin.y: card.height / 2
-        xScale: card.isFocused ? 1.08 : 1.0
-        yScale: card.isFocused ? 1.08 : 1.0
+        xScale: card._focusScale * card._pulseScale
+        yScale: card._focusScale * card._pulseScale
+    }
 
-        Behavior on xScale { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-        Behavior on yScale { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+    SequentialAnimation {
+        id: pulseAnim
+        running: card.isLoading
+        loops: Animation.Infinite
+        NumberAnimation {
+            target: card; property: "_pulseScale"
+            to: 1.10; duration: 450
+            easing.type: Easing.InOutSine
+        }
+        NumberAnimation {
+            target: card; property: "_pulseScale"
+            to: 0.92; duration: 450
+            easing.type: Easing.InOutSine
+        }
+        onRunningChanged: if (!running) card._pulseScale = 1.0
     }
 
     Rectangle {
@@ -29,9 +49,9 @@ Item {
         anchors.margins: -3
         radius: cardBg.radius + 3
         color: "transparent"
-        border.width: card.isFocused ? 2.5 : 0
+        border.width: (card.isFocused || card.isLoading) ? 2.5 : 0
         border.color: appConfig.highlightColor
-        opacity: card.isFocused ? 1.0 : 0.0
+        opacity: (card.isFocused || card.isLoading) ? 1.0 : 0.0
 
         Behavior on opacity { NumberAnimation { duration: 200 } }
     }
@@ -41,7 +61,7 @@ Item {
         anchors.margins: -8
         radius: cardBg.radius + 8
         color: "transparent"
-        visible: card.isFocused
+        visible: card.isFocused || card.isLoading
 
         Rectangle {
             anchors.fill: parent
