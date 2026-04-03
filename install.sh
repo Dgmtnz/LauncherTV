@@ -38,7 +38,7 @@ echo "  ╚═══════════════════════
 echo ""
 
 info "Checking dependencies..."
-DEPS=(pyside6 xorg-xprop xorg-xinput xorg-xmodmap)
+DEPS=(pyside6 xorg-xprop xorg-xinput xorg-xmodmap noto-fonts-emoji)
 MISSING=()
 for pkg in "${DEPS[@]}"; do
     pacman -Qi "$pkg" &>/dev/null || MISSING+=("$pkg")

@@ -130,7 +130,7 @@ ApplicationWindow {
                 HeroWidget {
                     id: heroWidget
                     width: parent.width
-                    height: 380 * appConfig.scale
+                    height: 374 * appConfig.scale
                     isActive: root.currentRowIndex === 0 && !settingsPage.visible
                 }
 

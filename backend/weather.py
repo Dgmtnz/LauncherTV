@@ -3,8 +3,11 @@ import threading
 import time
 import urllib.parse
 import urllib.request
+from datetime import date
 
 from PySide6.QtCore import QObject, Signal, Slot, Property, QTimer
+
+_DAY_ABBR = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
 WMO_ICONS = {
     0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
@@ -88,6 +91,7 @@ class WeatherProvider(QObject):
         self._location = location or ""
         self._lat = None
         self._lon = None
+        self._forecast_json = "[]"
 
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.refresh)
@@ -119,6 +123,44 @@ class WeatherProvider(QObject):
         return self._location
 
     location = Property(str, _g_loc, notify=weatherChanged)
+
+    def _g_forecast(self):
+        return self._forecast_json
+
+    forecastJson = Property(str, _g_forecast, notify=weatherChanged)
+
+    @staticmethod
+    def _build_forecast(daily: dict) -> list[dict]:
+        times = daily.get("time") or []
+        codes = daily.get("weather_code") or []
+        tmax = daily.get("temperature_2m_max") or []
+        tmin = daily.get("temperature_2m_min") or []
+        rain = daily.get("precipitation_probability_max") or []
+        out: list[dict] = []
+        n = min(5, len(times), len(codes), len(tmax), len(tmin))
+        for i in range(n):
+            try:
+                d = date.fromisoformat(times[i])
+                abbr = _DAY_ABBR[d.weekday()]
+            except (ValueError, TypeError):
+                abbr = "—"
+            code = codes[i] if i < len(codes) else -1
+            r = rain[i] if i < len(rain) and rain[i] is not None else 0
+            try:
+                mx = int(round(float(tmax[i])))
+                mn = int(round(float(tmin[i])))
+            except (TypeError, ValueError):
+                mx, mn = 0, 0
+            out.append(
+                {
+                    "abbr": abbr,
+                    "min": mn,
+                    "max": mx,
+                    "rain": int(r),
+                    "icon": WMO_ICONS.get(code, "☁️"),
+                }
+            )
+        return out
 
     @Slot()
     def refresh(self):
@@ -160,7 +202,9 @@ class WeatherProvider(QObject):
                 f"https://api.open-meteo.com/v1/forecast"
                 f"?latitude={self._lat}&longitude={self._lon}"
                 f"&current=temperature_2m,apparent_temperature,weather_code"
-                f"&timezone=auto"
+                f"&daily=weather_code,temperature_2m_max,temperature_2m_min,"
+                f"precipitation_probability_max"
+                f"&forecast_days=5&timezone=auto"
             )
             req = urllib.request.Request(
                 url, headers={"User-Agent": "LauncherTV/1.0"}
@@ -177,6 +221,11 @@ class WeatherProvider(QObject):
             self._feels = f"{feels:.0f}°C" if feels is not None else "--°C"
             self._condition = WMO_DESCRIPTIONS.get(code, "Unknown")
             self._icon = WMO_ICONS.get(code, "☁️")
+            daily = data.get("daily")
+            if daily:
+                self._forecast_json = json.dumps(self._build_forecast(daily))
+            else:
+                self._forecast_json = "[]"
             self.weatherChanged.emit()
             return True
         except Exception:
