@@ -311,11 +311,27 @@ Item {
             }
         }
 
+        // ── Separator (weather | quick launch) ────────────────────
+
+        Item {
+            id: wxQuickSep
+            width: 1
+            height: parent.height
+
+            Rectangle {
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 1
+                height: parent.height * 0.62
+                color: "#2A3040"
+            }
+        }
+
         // ── Quick launch ──────────────────────────────────────────
 
         Item {
             id: quickLaunchCol
-            width: Math.max(80 * hero.s, heroRow.width - clockCol.width - wxCard.width - 2 * heroRow.gap)
+            width: Math.max(80 * hero.s, heroRow.width - clockCol.width - wxCard.width - wxQuickSep.width - 3 * heroRow.gap)
             height: parent.height
 
             Column {
